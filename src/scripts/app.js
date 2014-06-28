@@ -1,5 +1,19 @@
-var game = new Phaser.Game(800, 600, Phaser.AUTO, 'smoking-carrots', 
+var game = new Phaser.Game(960, 640, Phaser.CANVAS, 'smoking-carrots', 
 	{ preload: preload, create: create, update: update, render: render});
+
+var bullets;
+var fireButton;
+var bulletTime = 0;
+var hero;
+var cursor;
+var enemies;
+var score = 0;
+var numberOfLives = 3;
+var lives = numberOfLives;
+var scoreString = '';
+var scoreText;
+var stateText;
+var livesText;
 
 function preload() {
 	var IMAGEPATH = 'images/';
@@ -19,30 +33,7 @@ function preload() {
 	game.scale.fullScreenScaleMode = Phaser.ScaleManager.EXACT_FIT;
 }
 
-var bullets;
-var fireButton;
-var bulletTime = 0;
-var hero;
-var cursor;
-var enemies;
-var score = 0;
-var numberOfLives = 3;
-var lives = numberOfLives;
-var scoreString = '';
-var scoreText;
-var stateText;
-var livesText;
-var left = false;
-var right = false;
-var down = false;
-var up = false;
-var fire = false;
-var superPower = false;
-
-
 function create() {
-	if (!game.device.desktop){ game.input.onDown.add(gofull, this); } //go fullscreen on mobile devices
-
 	game.physics.startSystem(Phaser.Physics.ARCADE);
 
 	game.world.setBounds(0, 0, 800, 600);
@@ -84,49 +75,31 @@ function create() {
 	//Lives
 	livesText = game.add.text(0, 550, ' lives: ' + lives, {font: '30px Helvetica', fill: '#fff'});
 
-	// Virtual game controller buttons 
-	buttonsuper = game.add.button(600, 500, 'buttonsuper', null, this, 0, 1, 0, 1);  //game, x, y, key, callback, callbackContext, overFrame, outFrame, downFrame, upFrame
-	buttonsuper.fixedToCamera = true;  //our buttons should stay on the same place  
-	buttonsuper.events.onInputOver.add(function(){ superPower = true; });
-	buttonsuper.events.onInputOut.add(function(){ superPower = false; });
-	buttonsuper.events.onInputDown.add(function(){ superPower = true; });
-	buttonsuper.events.onInputUp.add(function(){ superPower = false; });
-
-
-	buttonfire = game.add.button(700, 500, 'buttonfire', null, this, 0, 1, 0, 1);
-	buttonfire.fixedToCamera = true;
-	buttonfire.events.onInputOver.add(function(){fire=true;});
-	buttonfire.events.onInputOut.add(function(){fire=false;});
-	buttonfire.events.onInputDown.add(function(){fire=true;});
-	buttonfire.events.onInputUp.add(function(){fire=false;});        
-
-	buttonleft = game.add.button(0, 472, 'buttonhorizontal', null, this, 0, 1, 0, 1);
-	buttonleft.fixedToCamera = true;
-	buttonleft.events.onInputOver.add(function(){left=true;});
-	buttonleft.events.onInputOut.add(function(){left=false;});
-	buttonleft.events.onInputDown.add(function(){left=true;});
-	buttonleft.events.onInputUp.add(function(){left=false;});
-
-	buttonright = game.add.button(160, 472, 'buttonhorizontal', null, this, 0, 1, 0, 1);
-	buttonright.fixedToCamera = true;
-	buttonright.events.onInputOver.add(function(){right=true;});
-	buttonright.events.onInputOut.add(function(){right=false;});
-	buttonright.events.onInputDown.add(function(){right=true;});
-	buttonright.events.onInputUp.add(function(){right=false;});
-
-	buttondown = game.add.button(96, 536, 'buttonvertical', null, this, 0, 1, 0, 1);
-	buttondown.fixedToCamera = true;
-	buttondown.events.onInputOver.add(function(){ down = true; });
-	buttondown.events.onInputOut.add(function(){ down = false ;});
-	buttondown.events.onInputDown.add(function(){ down = true; });
-	buttondown.events.onInputUp.add(function(){ down = false ;});
-
-	buttonup = game.add.button(96, 400, 'buttonvertical', null, this, 0, 1, 0, 1);
-	buttonup.fixedToCamera = true;
-	buttonup.events.onInputOver.add(function(){ up = true; });
-	buttonup.events.onInputOut.add(function(){ up = false ;});
-	buttonup.events.onInputDown.add(function(){ up = true; });
-	buttonup.events.onInputUp.add(function(){ up = false ;});
+	//Joystick control
+	GameController.init({
+		left: {
+			type: 'joystick',
+			joystick: {
+				touchMove: function(details) {
+					game.input.joystickLeft = details;
+				},
+				touchEnd: function() {
+					game.input.joystickLeft = null;
+				}
+			}
+		},
+		right: { 
+			type: 'joystick',
+			joystick: {
+				touchMove: function(details) {
+					game.input.joystickRight = details;
+				},
+				touchEnd: function() {
+					game.input.joystickRight = null;
+				}
+			}
+		}
+	});		
 }
 
 function createEnemies() {
@@ -134,7 +107,6 @@ function createEnemies() {
 	for (var i = 0; i < 10; i++) {
 		var enemy = enemies.create(i * Math.random() * 80, i * Math.random() * 50, 'evilBunny');
 		enemy.anchor.setTo(0.5, 0.5);
-		console.log(enemy.rotation);
 		enemy.rotation = game.physics.arcade.angleToXY(enemy, 200, 340);
 		//Move enemy to hero
 		game.physics.arcade.moveToObject(enemy, hero, 50);
@@ -145,36 +117,15 @@ function update() {
 	//Evil bunnies cannot move hero
 	hero.body.immovable = true;
 
-	//  Firing?
-	if (fire || game.input.activePointer.isDown) {
-		fireBullet();
-		//TODO:
-		//Figure out to aim bullet towards direction of gun
-		//bullet.rotation = game.physics.arcade.angleToPointer(bullet);
-	}
-
 	//  Run collision to kill enemies from hero's gun
 	game.physics.arcade.collide(bullets, enemies, collisionHandler, null, this);
 	game.physics.arcade.collide(hero, enemies, enemyHitsPlayer, null, this);
 
-	// Virtual Controller Commands
-	if (left) {
-		hero.x -= 5;
-		hero.angle += 5;
-	} else if (right) {
-		hero.x += 5;
-		hero.angle -= 5;
-	} else if (down && !left && !right) {
-		hero.y += 5;
-	} else if (up) {
-		hero.y -= 5;
-	} else if (superPower) {
-		//TODO: Add super power here
-	} else {
-		hero.loadTexture('hero', 0);
+	if (game.input.joystickLeft) {
+		moveHero(game.input.joystickLeft.normalizedX * 200, game.input.joystickLeft.normalizedY * 360, true);
+	} else if(game.input.joystickRight) {
+		fireBullet(game.input.joystickRight.normalizedX * 200, game.input.joystickRight.normalizedY * 360);
 	}
-
-	if (game.input.currentPointers === 0 && !game.input.activePointer.isMouse){ fire=false; right=false; left=false; top=false; superPower=false;} //this works around a "bug" where a button gets stuck in pressed state
 }
 
 function collisionHandler(bullet, enemy) {
@@ -188,6 +139,7 @@ function collisionHandler(bullet, enemy) {
 	if (enemies.countLiving() === 0) {
 		stateText.text = ' You Won, \n Click to restart';
 		stateText.visible = true;
+		restartGame();
 		game.input.onTap.addOnce(restart,this);
 	}
 }
@@ -204,7 +156,7 @@ function enemyHitsPlayer(hero, enemy) {
 	}
 }
 
-function fireBullet () {
+function fireBullet (x, y) {
 	//  To avoid them being allowed to fire too fast we set a time limit
 	if (game.time.now > bulletTime)
 	{
@@ -214,7 +166,8 @@ function fireBullet () {
 		if (bullet)
 		{
 			bullet.reset(hero.x - 7, hero.y - 26);
-			game.physics.arcade.moveToPointer(bullet, 300, game.input.activePointer);
+			bullet.body.velocity.y = y * -1;
+			bullet.body.velocity.x = x;
 			bulletTime = game.time.now + 200;
 		}
 	}
@@ -240,6 +193,15 @@ function render() {
  * HELPER FUNCTIONS
  *
 */
+
+function moveHero (x, y, rotate) {
+	hero.body.velocity.x = x;
+	hero.body.velocity.y = y * -1;
+	if (rotate) {
+		hero.angle = y * -1;
+	}
+}
+
 function gofull() { 
 	game.scale.startFullScreen(false);
 }
