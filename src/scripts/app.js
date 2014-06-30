@@ -44,7 +44,7 @@ function create() {
 	scoreText = game.add.text(10, 10, scoreString + score, { font: '34px Helvetica', fill: '#fff' });
 
 	//The hero
-	hero = game.add.sprite(200, 340, 'hero');
+	hero = game.add.sprite(480, 320, 'hero');
 	hero.enableBody = true;
 	game.physics.enable(hero, Phaser.Physics.ARCADE);
 
@@ -65,7 +65,7 @@ function create() {
 	enemies.enableBody = true;
 	enemies.physicsBodyType = Phaser.Physics.ARCADE;
 
-	createEnemies();
+	createEnemies(true);
 
 	//  Game Over or You Won!
 	stateText = game.add.text(game.world.centerX,game.world.centerY,' ', { font: '50px Helvetica', fill: '#3A3A3A' });
@@ -82,6 +82,7 @@ function create() {
 			joystick: {
 				touchMove: function(details) {
 					game.input.joystickLeft = details;
+					console.log(details);
 				},
 				touchEnd: function() {
 					game.input.joystickLeft = null;
@@ -102,11 +103,14 @@ function create() {
 	});		
 }
 
-function createEnemies() {
+function createEnemies(override) {
 
+	if (override) { return;}
 	for (var i = 0; i < 10; i++) {
 		var enemy = enemies.create(i * Math.random() * 80, i * Math.random() * 50, 'evilBunny');
 		enemy.anchor.setTo(0.5, 0.5);
+		//Hero cannot move evil bunnies
+		enemy.body.immovable = true;
 		enemy.rotation = game.physics.arcade.angleToXY(enemy, 200, 340);
 		//Move enemy to hero
 		game.physics.arcade.moveToObject(enemy, hero, 50);
@@ -122,7 +126,7 @@ function update() {
 	game.physics.arcade.collide(hero, enemies, enemyHitsPlayer, null, this);
 
 	if (game.input.joystickLeft) {
-		moveHero(game.input.joystickLeft.normalizedX * 200, game.input.joystickLeft.normalizedY * 360, true);
+		moveHero(game.input.joystickLeft.dx * 2, game.input.joystickLeft.dy * 2, true);
 	} else if(game.input.joystickRight) {
 		fireBullet(game.input.joystickRight.normalizedX * 200, game.input.joystickRight.normalizedY * 360);
 	}
@@ -185,7 +189,7 @@ function restart () {
 
 function render() {
 	//Debug
-	game.debug.spriteInfo(hero, 32, 450);
+	game.debug.spriteInfo(hero, 32, 250);
 	game.debug.pointer(game.input.activePointer);
 }
 
@@ -198,7 +202,7 @@ function moveHero (x, y, rotate) {
 	hero.body.velocity.x = x;
 	hero.body.velocity.y = y * -1;
 	if (rotate) {
-		hero.angle = y * -1;
+		hero.angle = ( x / y );
 	}
 }
 
