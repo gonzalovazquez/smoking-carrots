@@ -55,8 +55,8 @@ function create() {
 	bullets.enableBody = true;
 	bullets.physicsBodyType = Phaser.Physics.ARCADE;
 	bullets.createMultiple(30, 'bullet');
-	bullets.setAll('anchor.x', 1);
-	bullets.setAll('anchor.y', 1);
+	bullets.setAll('anchor.x', -2);
+	bullets.setAll('anchor.y', -2);
 	bullets.setAll('outOfBoundsKill', true);
 	bullets.setAll('checkWorldBounds', true);
 
