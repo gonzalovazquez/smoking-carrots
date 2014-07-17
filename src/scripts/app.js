@@ -65,7 +65,7 @@ function create() {
 	enemies.enableBody = true;
 	enemies.physicsBodyType = Phaser.Physics.ARCADE;
 
-	createEnemies(true);
+	createEnemies();
 
 	//  Game Over or You Won!
 	stateText = game.add.text(game.world.centerX,game.world.centerY,' ', { font: '50px Helvetica', fill: '#3A3A3A' });
