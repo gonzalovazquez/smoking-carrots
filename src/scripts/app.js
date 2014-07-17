@@ -82,7 +82,6 @@ function create() {
 			joystick: {
 				touchMove: function(details) {
 					game.input.joystickLeft = details;
-					console.log(details);
 				},
 				touchEnd: function() {
 					game.input.joystickLeft = null;
@@ -126,8 +125,9 @@ function update() {
 	game.physics.arcade.collide(hero, enemies, enemyHitsPlayer, null, this);
 
 	if (game.input.joystickLeft) {
-		moveHero(game.input.joystickLeft.dx * 2, game.input.joystickLeft.dy * 2, true);
+		moveHero(game.input.joystickLeft.dx * 2, game.input.joystickLeft.dy * 2);
 	} else if(game.input.joystickRight) {
+		rotateHero(game.input.joystickRight.normalizedX * 1000, game.input.joystickRight.normalizedY * 1000);
 		fireBullet(game.input.joystickRight.normalizedX * 200, game.input.joystickRight.normalizedY * 360);
 	}
 }
@@ -160,7 +160,7 @@ function enemyHitsPlayer(hero, enemy) {
 	}
 }
 
-function fireBullet (x, y) {
+function fireBullet(x, y) {
 	//  To avoid them being allowed to fire too fast we set a time limit
 	if (game.time.now > bulletTime)
 	{
@@ -178,7 +178,7 @@ function fireBullet (x, y) {
 
 }
 
-function restart () {
+function restart() {
 	lives = numberOfLives;
 	enemies.removeAll();
 	createEnemies();
@@ -198,12 +198,13 @@ function render() {
  *
 */
 
-function moveHero (x, y, rotate) {
+function moveHero(x, y) {
 	hero.body.velocity.x = x;
 	hero.body.velocity.y = y * -1;
-	if (rotate) {
-		hero.angle = ( x / y );
-	}
+}
+
+function rotateHero(x, y) {
+	hero.angle = (x + y);
 }
 
 function gofull() { 
