@@ -6,7 +6,7 @@ var fireButton;
 var bulletTime = 0;
 var hero;
 var cursor;
-var enemies;
+var zombies;
 var score = 0;
 var numberOfLives = 3;
 var lives = numberOfLives;
@@ -20,7 +20,7 @@ function preload() {
 	game.load.image('background', IMAGEPATH + 'bg.jpg');
 	game.load.image('hero', IMAGEPATH + 'hero.png');
 	game.load.image('bullet', IMAGEPATH + 'bullet.png');
-	game.load.spritesheet('evilBunny', IMAGEPATH + 'sprites/zombie-bunnies.png', 62, 62, 10);
+	game.load.spritesheet('zombieBunny', IMAGEPATH + 'sprites/zombie-bunnies.png', 62, 62, 10);
 
 	//gamepad buttons
 	game.load.image('buttonvertical', IMAGEPATH + 'buttons/button-vertical.png');
@@ -61,11 +61,11 @@ function create() {
 	bullets.setAll('checkWorldBounds', true);
 
     //Bad Guys group
-    enemies = game.add.group();
-    enemies.enableBody = true;
-    enemies.physicsBodyType = Phaser.Physics.ARCADE;
+    zombies = game.add.group();
+    zombies.enableBody = true;
+    zombies.physicsBodyType = Phaser.Physics.ARCADE;
 
-    createEnemies(true);
+    createZombies(true);
 
 	//  Game Over or You Won!
 	stateText = game.add.text(game.world.centerX,game.world.centerY,' ', { font: '50px Helvetica', fill: '#3A3A3A' });
@@ -102,14 +102,14 @@ function create() {
 	});		
 }
 
-function createEnemies(override) {
+function createZombies(override) {
 	if (!override) { return;}
 	for (var i = 0; i < 10; i++) {
-        var evilBunny = enemies.create(Math.random() * 200, Math.random() * 200, 'evilBunny');
-		evilBunny.body.immovable = true;
-        evilBunny.body.collideWorldBounds = true;
-        evilBunny.animations.add('walk');
-        evilBunny.animations.play('walk', 15, true);
+        var zombieBunny = zombies.create(Math.random() * 200, Math.random() * 200, 'zombieBunny');
+		zombieBunny.body.immovable = true;
+        zombieBunny.body.collideWorldBounds = true;
+        zombieBunny.animations.add('walk');
+        zombieBunny.animations.play('walk', 15, true);
 	}
 }
 
@@ -118,8 +118,8 @@ function update() {
 	hero.body.immovable = true;
 
 	//  Run collision to kill enemies from hero's gun
-	game.physics.arcade.collide(bullets, enemies, collisionHandler, null, this);
-	game.physics.arcade.collide(hero, enemies, enemyHitsPlayer, null, this);
+	game.physics.arcade.collide(bullets, zombies, collisionHandler, null, this);
+	game.physics.arcade.collide(hero, zombies, enemyHitsPlayer, null, this);
 
 	if (game.input.joystickLeft) {
 		moveHero(game.input.joystickLeft.dx * 2, game.input.joystickLeft.dy * 2);
@@ -137,7 +137,7 @@ function collisionHandler(bullet, evilBunny) {
 	bullet.kill();
 	evilBunny.destroy();
 
-	if (enemies.countLiving() === 0) {
+	if (zombies.countLiving() === 0) {
 		stateText.text = ' You Won, \n Click to restart';
 		stateText.visible = true;
 		game.input.onTap.addOnce(restart,this);
@@ -176,8 +176,8 @@ function fireBullet(x, y) {
 
 function restart() {
 	lives = numberOfLives;
-	enemies.removeAll();
-	createEnemies();
+	zombies.removeAll();
+	createZombies();
 	hero.revive();
 
 	stateText.visible = false;
