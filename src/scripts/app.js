@@ -60,23 +60,12 @@ function create() {
 	bullets.setAll('outOfBoundsKill', true);
 	bullets.setAll('checkWorldBounds', true);
 
-	//evilBunny = game.add.sprite(300, 200, 'evilBunny');
-    //  Here we add a new animation called 'walk'
-    //  Because we didn't give any other parameters it's going to make an animation from all available frames in the 'mummy' sprite sheet
-    //evilBunny.animations.add('walk');
-
-    //  And this starts the animation playing by using its key ("walk")
-    //  30 is the frame rate (30fps)
-    //  true means it will loop when it finishes
-    //evilBunny.animations.play('walk', 15, true);
-
-
     //Bad Guys group
     enemies = game.add.group();
     enemies.enableBody = true;
     enemies.physicsBodyType = Phaser.Physics.ARCADE;
 
-    createEnemies();
+    createEnemies(true);
 
 	//  Game Over or You Won!
 	stateText = game.add.text(game.world.centerX,game.world.centerY,' ', { font: '50px Helvetica', fill: '#3A3A3A' });
@@ -114,7 +103,7 @@ function create() {
 }
 
 function createEnemies(override) {
-	if (override) { return;}
+	if (!override) { return;}
 	for (var i = 0; i < 10; i++) {
         var evilBunny = enemies.create(Math.random() * 200, Math.random() * 200, 'evilBunny');
 		evilBunny.body.immovable = true;
