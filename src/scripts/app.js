@@ -20,7 +20,7 @@ function preload() {
 	game.load.image('background', IMAGEPATH + 'bg.jpg');
 	game.load.image('hero', IMAGEPATH + 'hero.png');
 	game.load.image('bullet', IMAGEPATH + 'bullet.png');
-	game.load.image('evilBunny', IMAGEPATH + 'enemy.png');
+	game.load.spritesheet('evilBunny', IMAGEPATH + 'sprites/zombie-bunnies.png', 62, 62, 10);
 
 	//gamepad buttons
 	game.load.image('buttonvertical', IMAGEPATH + 'buttons/button-vertical.png');
@@ -60,12 +60,23 @@ function create() {
 	bullets.setAll('outOfBoundsKill', true);
 	bullets.setAll('checkWorldBounds', true);
 
-	//Bad Guys group
-	enemies = game.add.group();
-	enemies.enableBody = true;
-	enemies.physicsBodyType = Phaser.Physics.ARCADE;
+	//evilBunny = game.add.sprite(300, 200, 'evilBunny');
+    //  Here we add a new animation called 'walk'
+    //  Because we didn't give any other parameters it's going to make an animation from all available frames in the 'mummy' sprite sheet
+    //evilBunny.animations.add('walk');
 
-	createEnemies();
+    //  And this starts the animation playing by using its key ("walk")
+    //  30 is the frame rate (30fps)
+    //  true means it will loop when it finishes
+    //evilBunny.animations.play('walk', 15, true);
+
+
+    //Bad Guys group
+    enemies = game.add.group();
+    enemies.enableBody = true;
+    enemies.physicsBodyType = Phaser.Physics.ARCADE;
+
+    createEnemies();
 
 	//  Game Over or You Won!
 	stateText = game.add.text(game.world.centerX,game.world.centerY,' ', { font: '50px Helvetica', fill: '#3A3A3A' });
@@ -103,16 +114,13 @@ function create() {
 }
 
 function createEnemies(override) {
-
 	if (override) { return;}
 	for (var i = 0; i < 10; i++) {
-		var enemy = enemies.create(i * Math.random() * 80, i * Math.random() * 50, 'evilBunny');
-		enemy.anchor.setTo(0.5, 0.5);
-		//Hero cannot move evil bunnies
-		enemy.body.immovable = true;
-		enemy.rotation = game.physics.arcade.angleToXY(enemy, 200, 340);
-		//Move enemy to hero
-		game.physics.arcade.moveToObject(enemy, hero, 50);
+        var evilBunny = enemies.create(Math.random() * 200, Math.random() * 200, 'evilBunny');
+		evilBunny.body.immovable = true;
+        evilBunny.body.collideWorldBounds = true;
+        evilBunny.animations.add('walk');
+        evilBunny.animations.play('walk', 15, true);
 	}
 }
 
@@ -132,23 +140,22 @@ function update() {
 	}
 }
 
-function collisionHandler(bullet, enemy) {
+function collisionHandler(bullet, evilBunny) {
 	//Update score
 	score += 1;
 	scoreText.text = scoreString + score;
 	//  When a bullet hits an enemy and the bullet
 	bullet.kill();
-	enemy.kill();
+	evilBunny.destroy();
 
 	if (enemies.countLiving() === 0) {
 		stateText.text = ' You Won, \n Click to restart';
 		stateText.visible = true;
-		restartGame();
 		game.input.onTap.addOnce(restart,this);
 	}
 }
 
-function enemyHitsPlayer(hero, enemy) {	
+function enemyHitsPlayer(hero, evilBunny) {
 	lives--;
 	livesText.text = 'lives: ' + lives;
 
@@ -190,7 +197,6 @@ function restart() {
 function render() {
 	//Debug
 	game.debug.spriteInfo(hero, 32, 250);
-	game.debug.pointer(game.input.activePointer);
 }
 
 /*
