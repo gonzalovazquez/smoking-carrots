@@ -1,4 +1,4 @@
-var game = new Phaser.Game(960, 640, Phaser.CANVAS, 'smoking-carrots', 
+var game = new Phaser.Game(568, 320, Phaser.CANVAS, 'smoking-carrots', 
 	{ preload: preload, create: create, update: update, render: render});
 
 var bullets;
@@ -22,15 +22,6 @@ function preload() {
 	game.load.image('bullet', IMAGEPATH + 'bullet.png');
 	game.load.spritesheet('zombieBunny', IMAGEPATH + 'sprites/zombie-bunnies.png', 62, 62, 10);
 
-	//gamepad buttons
-	game.load.image('buttonvertical', IMAGEPATH + 'buttons/button-vertical.png');
-	game.load.image('buttonhorizontal', IMAGEPATH + 'buttons/button-horizontal.png');
-	game.load.image('buttonfire', IMAGEPATH + 'buttons/button-round-a.png');
-	game.load.image('buttonsuper', IMAGEPATH + 'buttons/button-round-b.png');
-
-	//Full Screen
-	game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
-	game.scale.fullScreenScaleMode = Phaser.ScaleManager.EXACT_FIT;
 }
 
 function create() {
