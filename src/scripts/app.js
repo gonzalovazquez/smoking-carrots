@@ -38,6 +38,7 @@ function create() {
 	hero = game.add.sprite(480, 320, 'hero');
 	hero.enableBody = true;
 	game.physics.enable(hero, Phaser.Physics.ARCADE);
+	hero.body.collideWorldBounds = true;
 
 	hero.anchor.setTo(0.5, 0.5);
 
@@ -90,15 +91,20 @@ function create() {
 				}
 			}
 		}
-	});		
+	});
+
+	// Camera control
+	game.camera.follow(hero);
+    game.camera.deadzone = new Phaser.Rectangle(150, 150, 150, 150);
+    game.camera.focusOnXY(0, 0);
 }
 
 function createZombies(override) {
 	if (!override) { return;}
 	for (var i = 0; i < 10; i++) {
-        var zombieBunny = zombies.create(Math.random() * 200, Math.random() * 200, 'zombieBunny');
+        var zombieBunny = zombies.create(Math.random() * 500, Math.random() * 500, 'zombieBunny');
 		zombieBunny.body.immovable = true;
-        zombieBunny.body.collideWorldBounds = true;
+        zombieBunny.body.collideWorldBounds = false;
         zombieBunny.animations.add('walk');
         zombieBunny.animations.play('walk', 15, true);
 	}
