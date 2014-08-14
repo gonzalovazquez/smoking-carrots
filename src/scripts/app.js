@@ -105,7 +105,7 @@ function createZombies(override) {
 	for (var i = 0; i < 10; i++) {
 		var zombieBunny = zombies.create(Math.random() * 500, Math.random() * 500, 'zombieBunny');
 		zombieBunny.body.immovable = true;
-		zombieBunny.body.collideWorldBounds = false;
+		zombieBunny.body.collideWorldBounds = true;
 		zombieBunny.animations.add('walk');
 		zombieBunny.animations.play('walk', 15, true);
 		game.physics.arcade.moveToObject(zombieBunny, hero, 50);
