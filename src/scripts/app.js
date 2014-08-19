@@ -1,4 +1,4 @@
-var game = new Phaser.Game(960, 640, Phaser.CANVAS, 'smoking-carrots', 
+var game = new Phaser.Game(568, 320, Phaser.CANVAS, 'smoking-carrots', 
 	{ preload: preload, create: create, update: update, render: render});
 
 var bullets;
@@ -22,15 +22,6 @@ function preload() {
 	game.load.image('bullet', IMAGEPATH + 'bullet.png');
 	game.load.spritesheet('zombieBunny', IMAGEPATH + 'sprites/zombie-bunnies.png', 62, 62, 10);
 
-	//gamepad buttons
-	game.load.image('buttonvertical', IMAGEPATH + 'buttons/button-vertical.png');
-	game.load.image('buttonhorizontal', IMAGEPATH + 'buttons/button-horizontal.png');
-	game.load.image('buttonfire', IMAGEPATH + 'buttons/button-round-a.png');
-	game.load.image('buttonsuper', IMAGEPATH + 'buttons/button-round-b.png');
-
-	//Full Screen
-	game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
-	game.scale.fullScreenScaleMode = Phaser.ScaleManager.EXACT_FIT;
 }
 
 function create() {
@@ -45,8 +36,10 @@ function create() {
 
 	//The hero
 	hero = game.add.sprite(480, 320, 'hero');
-	hero.enableBody = true;
 	game.physics.enable(hero, Phaser.Physics.ARCADE);
+	hero.enableBody = true;
+	hero.body.collideWorldBounds = true;
+	hero.body.immovable = false;
 
 	hero.anchor.setTo(0.5, 0.5);
 
@@ -60,12 +53,12 @@ function create() {
 	bullets.setAll('outOfBoundsKill', true);
 	bullets.setAll('checkWorldBounds', true);
 
-    //Bad Guys group
-    zombies = game.add.group();
-    zombies.enableBody = true;
-    zombies.physicsBodyType = Phaser.Physics.ARCADE;
+	//Bad Guys group
+	zombies = game.add.group();
+	zombies.enableBody = true;
+	zombies.physicsBodyType = Phaser.Physics.ARCADE;
 
-    createZombies(true);
+	createZombies(true);
 
 	//  Game Over or You Won!
 	stateText = game.add.text(game.world.centerX,game.world.centerY,' ', { font: '50px Helvetica', fill: '#3A3A3A' });
@@ -99,17 +92,23 @@ function create() {
 				}
 			}
 		}
-	});		
+	});
+
+	// Camera control
+	game.camera.follow(hero);
+	game.camera.deadzone = new Phaser.Rectangle(150, 150, 150, 150);
+	game.camera.focusOnXY(0, 0);
 }
 
 function createZombies(override) {
 	if (!override) { return;}
 	for (var i = 0; i < 10; i++) {
-        var zombieBunny = zombies.create(Math.random() * 200, Math.random() * 200, 'zombieBunny');
+		var zombieBunny = zombies.create(Math.random() * 500, Math.random() * 500, 'zombieBunny');
 		zombieBunny.body.immovable = true;
-        zombieBunny.body.collideWorldBounds = true;
-        zombieBunny.animations.add('walk');
-        zombieBunny.animations.play('walk', 15, true);
+		zombieBunny.body.collideWorldBounds = false;
+		zombieBunny.animations.add('walk');
+		zombieBunny.animations.play('walk', 15, true);
+		game.physics.arcade.moveToObject(zombieBunny, hero, 50);
 	}
 }
 
@@ -127,6 +126,8 @@ function update() {
 		rotateHero(game.input.joystickRight.normalizedX * 1000, game.input.joystickRight.normalizedY * 1000);
 		fireBullet(game.input.joystickRight.normalizedX * 200, game.input.joystickRight.normalizedY * 360);
 	}
+
+	zombies.angle = game.physics.arcade.angleBetween(zombies, hero);
 }
 
 function collisionHandler(bullet, evilBunny) {
@@ -200,8 +201,4 @@ function moveHero(x, y) {
 
 function rotateHero(x, y) {
 	hero.angle = (x + y);
-}
-
-function gofull() { 
-	game.scale.startFullScreen(false);
 }
