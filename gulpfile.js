@@ -97,7 +97,7 @@ gulp.task('server', function(next) {
 	server.use(connect.static(dest)).listen(port, next);
 });
 
-gulp.task('launch', function(){
+gulp.task('launch', ['server'], function(){
 	open('http://' + serverAddress + port);
 });
 
